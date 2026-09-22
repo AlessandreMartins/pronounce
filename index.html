@@ -186,23 +186,11 @@
 
 <script>
 
-const params =
-    new URLSearchParams(
-        window.location.search
-    );
+const params = new URLSearchParams(window.location.search);
 
-let text =
-    params.get("word") || "";
-
-
-/*
-Evita URLs absurdamente grandes.
-Para palavras e frases do ebook,
-120 caracteres é mais que suficiente.
-*/
+let text = params.get("word") || "";
 
 text = text.trim().slice(0, 120);
-
 
 const wordElement =
     document.getElementById("word");
@@ -210,6 +198,19 @@ const wordElement =
 const statusElement =
     document.getElementById("status");
 
+const synth = window.speechSynthesis;
+
+/*
+Mantemos uma referência global.
+Isso também ajuda a evitar alguns
+comportamentos estranhos de navegadores móveis.
+*/
+let currentUtterance = null;
+
+
+/* =========================
+   TEXTO DA PÁGINA
+========================= */
 
 if (!text) {
 
@@ -229,146 +230,274 @@ if (!text) {
 }
 
 
+/* =========================
+   CARREGAR VOZES
+========================= */
+
+let availableVoices = [];
+
+function loadVoices() {
+
+    availableVoices =
+        synth.getVoices();
+
+}
+
 /*
-Seleciona automaticamente
-uma voz em inglês americano.
+Chamamos imediatamente.
 */
 
-function getEnglishVoice() {
-
-    const voices =
-        window.speechSynthesis.getVoices();
+loadVoices();
 
 
-    /*
-    Primeiro tenta encontrar algumas
-    vozes comuns de boa qualidade.
-    */
+/*
+Alguns navegadores carregam
+as vozes posteriormente.
+*/
 
-    const preferred =
-        voices.find(voice =>
+if (
+    typeof synth.onvoiceschanged !==
+    "undefined"
+) {
 
-            voice.lang === "en-US" &&
-
-            /Samantha|Google US English|Aria|Jenny/i
-            .test(voice.name)
-
-        );
-
-
-    if (preferred) {
-        return preferred;
-    }
-
-
-    /*
-    Se não encontrar,
-    usa qualquer voz americana.
-    */
-
-    const american =
-        voices.find(
-            voice =>
-                voice.lang === "en-US"
-        );
-
-
-    if (american) {
-        return american;
-    }
-
-
-    /*
-    Último fallback:
-    qualquer voz em inglês.
-    */
-
-    return voices.find(
-        voice =>
-            voice.lang.startsWith("en")
+    synth.addEventListener(
+        "voiceschanged",
+        loadVoices
     );
 
 }
 
 
-function speakWord(rate = 0.9) {
+/* =========================
+   DETECTAR IPHONE/IPAD
+========================= */
 
-    if (!text) return;
+function isIOS() {
+
+    return (
+
+        /iPad|iPhone|iPod/.test(
+            navigator.userAgent
+        )
+
+        ||
+
+        (
+            navigator.platform === "MacIntel"
+            &&
+            navigator.maxTouchPoints > 1
+        )
+
+    );
+
+}
+
+
+/* =========================
+   ESCOLHA DA VOZ
+========================= */
+
+function getEnglishVoice() {
+
+    /*
+    No iPhone deixamos o próprio
+    iOS escolher a voz.
+
+    Isso é mais confiável do que
+    forçar Samantha/Fred/etc.
+    */
+
+    if (isIOS()) {
+
+        return null;
+
+    }
 
 
     /*
-    Interrompe áudio anterior para impedir
-    várias pronúncias tocando juntas.
+    Em desktop tentamos selecionar
+    uma voz americana.
     */
 
-    window.speechSynthesis.cancel();
+    const preferred =
+        availableVoices.find(
+            voice =>
+
+                /^en-US/i.test(voice.lang)
+
+                &&
+
+                /Samantha|Google US English|Aria|Jenny/i
+                    .test(voice.name)
+        );
 
 
-    const speech =
+    if (preferred) {
+
+        return preferred;
+
+    }
+
+
+    const american =
+        availableVoices.find(
+            voice =>
+                /^en-US/i.test(voice.lang)
+        );
+
+
+    if (american) {
+
+        return american;
+
+    }
+
+
+    return availableVoices.find(
+        voice =>
+            /^en/i.test(voice.lang)
+    );
+
+}
+
+
+/* =========================
+   FALAR
+========================= */
+
+function speakWord(rate = 0.9) {
+
+    if (!text) {
+
+        return;
+
+    }
+
+
+    if (
+        !("speechSynthesis" in window)
+    ) {
+
+        statusElement.textContent =
+            "Seu navegador não oferece suporte à pronúncia.";
+
+        return;
+
+    }
+
+
+    /*
+    Safari às vezes deixa o sintetizador
+    em estado pausado.
+    */
+
+    if (synth.paused) {
+
+        synth.resume();
+
+    }
+
+
+    /*
+    IMPORTANTE:
+    não usamos cancel() no iPhone.
+
+    Alguns Safari/iOS podem descartar
+    a fala logo depois de cancel().
+    */
+
+    if (
+        !isIOS()
+        &&
+        synth.speaking
+    ) {
+
+        synth.cancel();
+
+    }
+
+
+    currentUtterance =
         new SpeechSynthesisUtterance(text);
 
 
-    speech.lang = "en-US";
+    currentUtterance.lang =
+        "en-US";
 
-    speech.rate = rate;
+    currentUtterance.rate =
+        rate;
 
-    speech.pitch = 1;
+    currentUtterance.pitch =
+        1;
 
-    speech.volume = 1;
+    currentUtterance.volume =
+        1;
 
 
     const voice =
         getEnglishVoice();
 
 
+    /*
+    No iOS normalmente fica sem
+    voice explicitamente definida,
+    permitindo ao sistema selecionar
+    a voz apropriada para en-US.
+    */
+
     if (voice) {
-        speech.voice = voice;
+
+        currentUtterance.voice =
+            voice;
+
     }
 
 
-    speech.onstart = () => {
+    currentUtterance.onstart =
+        function () {
 
-        statusElement.textContent =
-            "Reproduzindo...";
+            statusElement.textContent =
+                "Reproduzindo...";
 
-    };
-
-
-    speech.onend = () => {
-
-        statusElement.textContent = "";
-
-    };
+        };
 
 
-    speech.onerror = () => {
+    currentUtterance.onend =
+        function () {
 
-        statusElement.textContent =
-            "Não foi possível reproduzir a pronúncia.";
+            statusElement.textContent =
+                "";
 
-    };
+        };
 
 
-    window.speechSynthesis.speak(
-        speech
+    currentUtterance.onerror =
+        function (event) {
+
+            console.log(
+                "Speech error:",
+                event.error
+            );
+
+            statusElement.textContent =
+                "Erro de áudio: "
+                + event.error;
+
+        };
+
+
+    /*
+    Esta chamada acontece diretamente
+    depois do clique do usuário.
+    Isso é importante principalmente
+    no Safari/iPhone.
+    */
+
+    synth.speak(
+        currentUtterance
     );
 
 }
-
-
-/*
-Alguns navegadores,
-especialmente Chrome,
-carregam as vozes depois
-da página.
-*/
-
-window.speechSynthesis.onvoiceschanged =
-    () => {
-
-        window.speechSynthesis.getVoices();
-
-    };
 
 </script>
 
