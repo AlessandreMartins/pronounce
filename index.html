@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Pronúncia | Inglês Real</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #071426;
+        color: white;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+        padding: 24px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 520px;
+
+        background: #0d2038;
+
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
+
+        padding: 40px 28px;
+
+        text-align: center;
+
+        box-shadow:
+            0 20px 60px rgba(0,0,0,0.30);
+    }
+
+    .label {
+        color: #ff9f1c;
+
+        font-size: 13px;
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 2px;
+
+        margin-bottom: 10px;
+    }
+
+    h1 {
+        margin: 0 0 10px;
+
+        font-size: clamp(36px, 10vw, 58px);
+
+        word-break: break-word;
+    }
+
+    .subtitle {
+        opacity: 0.65;
+
+        margin-bottom: 32px;
+    }
+
+    .buttons {
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 12px;
+    }
+
+    button {
+        width: 100%;
+
+        border: none;
+
+        border-radius: 15px;
+
+        padding: 17px 20px;
+
+        font-size: 17px;
+        font-weight: 700;
+
+        cursor: pointer;
+
+        transition: transform 0.15s ease;
+    }
+
+    button:active {
+        transform: scale(0.98);
+    }
+
+    .normal {
+        background: #ff9f1c;
+        color: #071426;
+    }
+
+    .slow {
+        background: rgba(255,255,255,0.08);
+        color: white;
+
+        border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .status {
+        height: 25px;
+
+        margin-top: 22px;
+
+        font-size: 14px;
+
+        opacity: 0.65;
+    }
+
+    .brand {
+        margin-top: 30px;
+
+        font-size: 13px;
+
+        opacity: 0.45;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="label">
+        Inglês Real
+    </div>
+
+    <h1 id="word">
+        Loading...
+    </h1>
+
+    <div class="subtitle">
+        American English
+    </div>
+
+    <div class="buttons">
+
+        <button
+            class="normal"
+            onclick="speakWord(0.9)"
+        >
+            ▶ Ouvir pronúncia
+        </button>
+
+        <button
+            class="slow"
+            onclick="speakWord(0.65)"
+        >
+            🐢 Ouvir devagar
+        </button>
+
+    </div>
+
+    <div
+        id="status"
+        class="status"
+    ></div>
+
+    <div class="brand">
+        Do Zero às Mil Palavras do Inglês Real
+        <br>
+        @alefalando
+    </div>
+
+</div>
+
+<script>
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+let text =
+    params.get("word") || "";
+
+
+/*
+Evita URLs absurdamente grandes.
+Para palavras e frases do ebook,
+120 caracteres é mais que suficiente.
+*/
+
+text = text.trim().slice(0, 120);
+
+
+const wordElement =
+    document.getElementById("word");
+
+const statusElement =
+    document.getElementById("status");
+
+
+if (!text) {
+
+    wordElement.textContent =
+        "Nenhuma palavra encontrada";
+
+    statusElement.textContent =
+        "Abra esta página através do botão de áudio do ebook.";
+
+} else {
+
+    wordElement.textContent = text;
+
+    document.title =
+        text + " | Pronúncia";
+
+}
+
+
+/*
+Seleciona automaticamente
+uma voz em inglês americano.
+*/
+
+function getEnglishVoice() {
+
+    const voices =
+        window.speechSynthesis.getVoices();
+
+
+    /*
+    Primeiro tenta encontrar algumas
+    vozes comuns de boa qualidade.
+    */
+
+    const preferred =
+        voices.find(voice =>
+
+            voice.lang === "en-US" &&
+
+            /Samantha|Google US English|Aria|Jenny/i
+            .test(voice.name)
+
+        );
+
+
+    if (preferred) {
+        return preferred;
+    }
+
+
+    /*
+    Se não encontrar,
+    usa qualquer voz americana.
+    */
+
+    const american =
+        voices.find(
+            voice =>
+                voice.lang === "en-US"
+        );
+
+
+    if (american) {
+        return american;
+    }
+
+
+    /*
+    Último fallback:
+    qualquer voz em inglês.
+    */
+
+    return voices.find(
+        voice =>
+            voice.lang.startsWith("en")
+    );
+
+}
+
+
+function speakWord(rate = 0.9) {
+
+    if (!text) return;
+
+
+    /*
+    Interrompe áudio anterior para impedir
+    várias pronúncias tocando juntas.
+    */
+
+    window.speechSynthesis.cancel();
+
+
+    const speech =
+        new SpeechSynthesisUtterance(text);
+
+
+    speech.lang = "en-US";
+
+    speech.rate = rate;
+
+    speech.pitch = 1;
+
+    speech.volume = 1;
+
+
+    const voice =
+        getEnglishVoice();
+
+
+    if (voice) {
+        speech.voice = voice;
+    }
+
+
+    speech.onstart = () => {
+
+        statusElement.textContent =
+            "Reproduzindo...";
+
+    };
+
+
+    speech.onend = () => {
+
+        statusElement.textContent = "";
+
+    };
+
+
+    speech.onerror = () => {
+
+        statusElement.textContent =
+            "Não foi possível reproduzir a pronúncia.";
+
+    };
+
+
+    window.speechSynthesis.speak(
+        speech
+    );
+
+}
+
+
+/*
+Alguns navegadores,
+especialmente Chrome,
+carregam as vozes depois
+da página.
+*/
+
+window.speechSynthesis.onvoiceschanged =
+    () => {
+
+        window.speechSynthesis.getVoices();
+
+    };
+
+</script>
+
+</body>
+</html>
