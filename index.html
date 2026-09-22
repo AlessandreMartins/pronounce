@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 
 <meta
@@ -15,18 +17,22 @@
 
 <title>Pronúncia | Inglês Real</title>
 
+
 <style>
 
     * {
         box-sizing: border-box;
     }
 
+
     html {
         min-height: 100%;
         background: #071426;
     }
 
+
     body {
+
         margin: 0;
 
         min-height: 100vh;
@@ -49,6 +55,7 @@
 
 
     .card {
+
         width: 100%;
         max-width: 520px;
 
@@ -71,6 +78,7 @@
 
 
     .label {
+
         color: #ff9f1c;
 
         font-size: 13px;
@@ -85,6 +93,7 @@
 
 
     h1 {
+
         margin:
             0
             0
@@ -104,6 +113,7 @@
 
 
     .subtitle {
+
         opacity: 0.65;
 
         margin-bottom: 32px;
@@ -113,6 +123,7 @@
 
 
     .buttons {
+
         display: flex;
 
         flex-direction: column;
@@ -122,6 +133,7 @@
 
 
     button {
+
         width: 100%;
 
         border: none;
@@ -158,12 +170,15 @@
 
 
     .normal {
+
         background: #ff9f1c;
+
         color: #071426;
     }
 
 
     .slow {
+
         background:
             rgba(
                 255,
@@ -186,6 +201,7 @@
 
 
     .status {
+
         min-height: 25px;
 
         margin-top: 22px;
@@ -199,6 +215,7 @@
 
 
     .brand {
+
         margin-top: 30px;
 
         font-size: 13px;
@@ -217,7 +234,9 @@
             padding: 16px;
         }
 
+
         .card {
+
             padding:
                 34px
                 20px;
@@ -225,45 +244,61 @@
             border-radius: 20px;
         }
 
+
         button {
+
             padding:
                 18px
                 16px;
 
             font-size: 16px;
         }
+
     }
 
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="card">
 
+
     <div class="label">
+
         Inglês Real
+
     </div>
 
 
     <h1 id="word">
+
         Loading...
+
     </h1>
 
 
     <div class="subtitle">
+
         American English
+
     </div>
 
 
     <div class="buttons">
+
 
         <button
             id="normalButton"
             class="normal"
             type="button"
         >
+
             ▶ Ouvir pronúncia
+
         </button>
 
 
@@ -272,8 +307,11 @@
             class="slow"
             type="button"
         >
+
             🐢 Ouvir devagar
+
         </button>
+
 
     </div>
 
@@ -296,12 +334,61 @@
 
     </div>
 
+
 </div>
 
 
 <script>
 
 "use strict";
+
+
+/* ==================================================
+   CONFIGURAÇÃO DA SESSÃO DE ÁUDIO
+   ESPECIALMENTE PARA SAFARI / IOS
+================================================== */
+
+function configureAudioSession() {
+
+    try {
+
+        if (
+            "audioSession" in navigator
+            &&
+            navigator.audioSession
+        ) {
+
+            navigator.audioSession.type =
+                "playback";
+
+
+            console.log(
+                "AudioSession configurada como playback."
+            );
+
+        }
+
+    } catch (
+        error
+    ) {
+
+        console.warn(
+            "AudioSession não disponível ou não suportada:",
+            error
+        );
+
+    }
+
+}
+
+
+/*
+Tentamos configurar assim que
+a página carregar.
+*/
+
+configureAudioSession();
+
 
 
 /* ==================================================
@@ -332,6 +419,7 @@ const slowButton =
     );
 
 
+
 /* ==================================================
    PEGAR A PALAVRA DA URL
 ================================================== */
@@ -347,8 +435,8 @@ let text =
 
 
 /*
-Limpa espaços extras
-e evita textos muito grandes.
+Remove espaços extras
+e impede textos absurdamente grandes.
 */
 
 text =
@@ -360,11 +448,14 @@ text =
         );
 
 
+
 /* ==================================================
    MOSTRAR A PALAVRA
 ================================================== */
 
-if (text) {
+if (
+    text
+) {
 
     wordElement.textContent =
         text;
@@ -374,7 +465,6 @@ if (text) {
         text
         +
         " | Pronúncia";
-
 
 } else {
 
@@ -396,8 +486,9 @@ if (text) {
 }
 
 
+
 /* ==================================================
-   VERIFICAR SUPORTE A VOZ
+   VERIFICAR SUPORTE À VOZ
 ================================================== */
 
 const speechSupported =
@@ -412,19 +503,22 @@ const speechSupported =
 
 
 const synth =
+
     speechSupported
+
         ?
+
         window.speechSynthesis
+
         :
+
         null;
 
 
-/*
-Mantemos referência global
-da fala atual.
 
-Isso ajuda principalmente
-em navegadores móveis.
+/*
+Mantém uma referência global
+da fala atual.
 */
 
 let currentUtterance =
@@ -439,6 +533,7 @@ let availableVoices =
     [];
 
 
+
 /* ==================================================
    DETECTAR IPHONE / IPAD
 ================================================== */
@@ -451,7 +546,8 @@ function isIOS() {
         "";
 
 
-    const oldIOSDevice =
+    const classicIOSDevice =
+
         /iPad|iPhone|iPod/i
             .test(
                 userAgent
@@ -459,8 +555,8 @@ function isIOS() {
 
 
     /*
-    iPads modernos podem se identificar
-    como Macintosh.
+    Alguns iPads modernos
+    se identificam como Mac.
     */
 
     const modernIPad =
@@ -477,12 +573,17 @@ function isIOS() {
 
 
     return (
-        oldIOSDevice
+
+        classicIOSDevice
+
         ||
+
         modernIPad
+
     );
 
 }
+
 
 
 /* ==================================================
@@ -518,21 +619,21 @@ function loadVoices() {
 }
 
 
-/*
-Tenta carregar imediatamente.
-*/
 
 if (
     speechSupported
 ) {
 
+    /*
+    Primeira tentativa.
+    */
+
     loadVoices();
 
 
     /*
-    Chrome, Safari e outros
-    podem carregar as vozes
-    alguns instantes depois.
+    Alguns navegadores carregam
+    as vozes posteriormente.
     */
 
     if (
@@ -543,13 +644,17 @@ if (
     ) {
 
         synth.addEventListener(
+
             "voiceschanged",
+
             loadVoices
+
         );
 
     }
 
 }
+
 
 
 /* ==================================================
@@ -568,12 +673,14 @@ function getEnglishVoice() {
 
 
     /*
-    No iPhone/iPad,
-    não forçamos uma voz específica.
+    NO IOS:
 
-    O idioma en-US será definido
-    na frase e o próprio iOS
-    escolherá uma voz compatível.
+    Não forçamos Samantha,
+    Jenny, Aria etc.
+
+    Apenas usamos en-US
+    e deixamos o próprio sistema
+    escolher uma voz.
     */
 
     if (
@@ -586,8 +693,7 @@ function getEnglishVoice() {
 
 
     /*
-    Atualiza a lista antes
-    de selecionar.
+    Atualiza a lista de vozes.
     */
 
     const currentVoices =
@@ -607,8 +713,8 @@ function getEnglishVoice() {
 
 
     /*
-    Preferimos algumas
-    vozes americanas comuns.
+    Primeiro tentamos algumas
+    vozes americanas conhecidas.
     */
 
     const preferredVoice =
@@ -649,8 +755,8 @@ function getEnglishVoice() {
 
 
     /*
-    Se não encontrar uma preferida,
-    usa qualquer voz americana.
+    Segundo fallback:
+    qualquer voz en-US.
     */
 
     const americanVoice =
@@ -661,10 +767,12 @@ function getEnglishVoice() {
             ) {
 
                 return (
+
                     /^en-US/i
                         .test(
                             voice.lang
                         )
+
                 );
 
             }
@@ -694,10 +802,12 @@ function getEnglishVoice() {
             ) {
 
                 return (
+
                     /^en/i
                         .test(
                             voice.lang
                         )
+
                 );
 
             }
@@ -706,12 +816,17 @@ function getEnglishVoice() {
 
 
     return (
+
         englishVoice
+
         ||
+
         null
+
     );
 
 }
+
 
 
 /* ==================================================
@@ -728,6 +843,7 @@ function setStatus(
 }
 
 
+
 /* ==================================================
    FUNÇÃO PRINCIPAL DE PRONÚNCIA
 ================================================== */
@@ -735,6 +851,21 @@ function setStatus(
 function speakWord(
     rate
 ) {
+
+
+    /*
+    IMPORTANTE:
+
+    Configuramos novamente
+    a AudioSession exatamente
+    durante a interação do usuário.
+
+    Isso ajuda principalmente
+    no Safari/iPhone.
+    */
+
+    configureAudioSession();
+
 
     /*
     Sem palavra,
@@ -751,7 +882,7 @@ function speakWord(
 
 
     /*
-    Verifica suporte do navegador.
+    Verifica suporte.
     */
 
     if (
@@ -769,9 +900,8 @@ function speakWord(
 
 
     /*
-    Algumas versões do Safari
-    podem deixar o sintetizador
-    em estado pausado.
+    Safari pode deixar
+    speechSynthesis pausado.
     */
 
     if (
@@ -797,25 +927,28 @@ function speakWord(
 
 
     /*
-    IMPORTANTE PARA IOS:
+    IMPORTANTE:
 
-    Não usamos cancel()
-    antes da reprodução no iPhone/iPad.
+    NÃO usamos cancel()
+    no iPhone ou iPad.
 
-    Em alguns ambientes Safari/iOS,
-    cancelar e imediatamente falar
-    pode impedir que a nova fala seja
-    reproduzida.
+    Em outros navegadores,
+    cancelamos a fala anterior
+    antes de começar uma nova.
     */
 
     if (
+
         !isIOS()
+
         &&
+
         (
             synth.speaking
             ||
             synth.pending
         )
+
     ) {
 
         try {
@@ -827,7 +960,7 @@ function speakWord(
         ) {
 
             console.warn(
-                "Erro ao cancelar fala anterior:",
+                "Não foi possível cancelar a fala anterior:",
                 error
             );
 
@@ -837,7 +970,7 @@ function speakWord(
 
 
     /*
-    Criamos uma nova fala.
+    Cria a nova fala.
     */
 
     const utterance =
@@ -855,7 +988,7 @@ function speakWord(
 
 
     /*
-    Idioma.
+    Inglês americano.
     */
 
     utterance.lang =
@@ -871,7 +1004,7 @@ function speakWord(
 
 
     /*
-    Tom natural.
+    Tom.
     */
 
     utterance.pitch =
@@ -888,8 +1021,10 @@ function speakWord(
 
     /*
     No desktop,
-    tentamos selecionar
+    tentamos escolher
     uma boa voz americana.
+
+    No iOS, deixamos automático.
     */
 
     const voice =
@@ -906,8 +1041,9 @@ function speakWord(
     }
 
 
+
     /* ==================================================
-       EVENTOS
+       EVENTO: COMEÇOU
     ================================================== */
 
     utterance.onstart =
@@ -919,6 +1055,11 @@ function speakWord(
 
         };
 
+
+
+    /* ==================================================
+       EVENTO: TERMINOU
+    ================================================== */
 
     utterance.onend =
         function () {
@@ -942,6 +1083,11 @@ function speakWord(
         };
 
 
+
+    /* ==================================================
+       EVENTO: ERRO
+    ================================================== */
+
     utterance.onerror =
         function (
             event
@@ -954,37 +1100,23 @@ function speakWord(
 
 
             /*
-            "canceled" pode acontecer
-            normalmente quando uma fala
-            anterior é interrompida.
+            Esses erros podem ocorrer
+            naturalmente quando uma fala
+            é interrompida.
             */
 
             if (
+
                 event.error
                 ===
                 "canceled"
-            ) {
 
-                setStatus(
-                    ""
-                );
+                ||
 
-
-                return;
-
-            }
-
-
-            /*
-            Alguns navegadores usam
-            "interrupted" em situações
-            semelhantes.
-            */
-
-            if (
                 event.error
                 ===
                 "interrupted"
+
             ) {
 
                 setStatus(
@@ -1004,6 +1136,7 @@ function speakWord(
         };
 
 
+
     /* ==================================================
        REPRODUZIR
     ================================================== */
@@ -1011,12 +1144,11 @@ function speakWord(
     try {
 
         /*
-        A chamada speak() acontece
-        diretamente dentro da função
-        acionada pelo toque do usuário.
+        A chamada acontece diretamente
+        durante o clique do usuário.
 
-        Isso é especialmente importante
-        no Safari/iPhone.
+        Isso é importante para
+        Safari e iPhone.
         */
 
         synth.speak(
@@ -1043,8 +1175,9 @@ function speakWord(
 }
 
 
+
 /* ==================================================
-   BOTÃO NORMAL
+   BOTÃO — PRONÚNCIA NORMAL
 ================================================== */
 
 normalButton.addEventListener(
@@ -1062,8 +1195,9 @@ normalButton.addEventListener(
 );
 
 
+
 /* ==================================================
-   BOTÃO DEVAGAR
+   BOTÃO — PRONÚNCIA DEVAGAR
 ================================================== */
 
 slowButton.addEventListener(
@@ -1081,8 +1215,9 @@ slowButton.addEventListener(
 );
 
 
+
 /* ==================================================
-   AVISO CASO O NAVEGADOR NÃO TENHA SUPORTE
+   AVISO DE INCOMPATIBILIDADE
 ================================================== */
 
 if (
@@ -1105,5 +1240,7 @@ if (
 
 </script>
 
+
 </body>
+
 </html>
