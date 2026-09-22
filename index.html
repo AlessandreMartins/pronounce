@@ -4,20 +4,33 @@
 <meta charset="UTF-8">
 
 <meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<meta
+    name="theme-color"
+    content="#071426"
 >
 
 <title>Pronúncia | Inglês Real</title>
 
 <style>
+
     * {
         box-sizing: border-box;
     }
 
+    html {
+        min-height: 100%;
+        background: #071426;
+    }
+
     body {
         margin: 0;
+
         min-height: 100vh;
+        min-height: 100dvh;
 
         display: flex;
         align-items: center;
@@ -26,10 +39,14 @@
         background: #071426;
         color: white;
 
-        font-family: Arial, Helvetica, sans-serif;
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
 
         padding: 24px;
     }
+
 
     .card {
         width: 100%;
@@ -37,7 +54,10 @@
 
         background: #0d2038;
 
-        border: 1px solid rgba(255,255,255,0.08);
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.08);
+
         border-radius: 24px;
 
         padding: 40px 28px;
@@ -45,8 +65,10 @@
         text-align: center;
 
         box-shadow:
-            0 20px 60px rgba(0,0,0,0.30);
+            0 20px 60px
+            rgba(0, 0, 0, 0.30);
     }
+
 
     .label {
         color: #ff9f1c;
@@ -61,19 +83,34 @@
         margin-bottom: 10px;
     }
 
-    h1 {
-        margin: 0 0 10px;
 
-        font-size: clamp(36px, 10vw, 58px);
+    h1 {
+        margin:
+            0
+            0
+            10px;
+
+        font-size:
+            clamp(
+                36px,
+                10vw,
+                58px
+            );
+
+        line-height: 1.1;
 
         word-break: break-word;
     }
+
 
     .subtitle {
         opacity: 0.65;
 
         margin-bottom: 32px;
+
+        font-size: 16px;
     }
+
 
     .buttons {
         display: flex;
@@ -82,6 +119,7 @@
 
         gap: 12px;
     }
+
 
     button {
         width: 100%;
@@ -97,41 +135,103 @@
 
         cursor: pointer;
 
-        transition: transform 0.15s ease;
+        transition:
+            transform 0.15s ease,
+            opacity 0.15s ease;
+
+        -webkit-tap-highlight-color:
+            transparent;
+
+        touch-action: manipulation;
     }
+
 
     button:active {
         transform: scale(0.98);
     }
+
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
 
     .normal {
         background: #ff9f1c;
         color: #071426;
     }
 
+
     .slow {
-        background: rgba(255,255,255,0.08);
+        background:
+            rgba(
+                255,
+                255,
+                255,
+                0.08
+            );
+
         color: white;
 
-        border: 1px solid rgba(255,255,255,0.12);
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.12
+            );
     }
 
+
     .status {
-        height: 25px;
+        min-height: 25px;
 
         margin-top: 22px;
 
         font-size: 14px;
 
         opacity: 0.65;
+
+        line-height: 1.4;
     }
+
 
     .brand {
         margin-top: 30px;
 
         font-size: 13px;
 
+        line-height: 1.5;
+
         opacity: 0.45;
+    }
+
+
+    @media (
+        max-width: 480px
+    ) {
+
+        body {
+            padding: 16px;
+        }
+
+        .card {
+            padding:
+                34px
+                20px;
+
+            border-radius: 20px;
+        }
+
+        button {
+            padding:
+                18px
+                16px;
+
+            font-size: 16px;
+        }
     }
 
 </style>
@@ -145,169 +245,322 @@
         Inglês Real
     </div>
 
+
     <h1 id="word">
         Loading...
     </h1>
+
 
     <div class="subtitle">
         American English
     </div>
 
+
     <div class="buttons">
 
         <button
+            id="normalButton"
             class="normal"
-            onclick="speakWord(0.9)"
+            type="button"
         >
             ▶ Ouvir pronúncia
         </button>
 
+
         <button
+            id="slowButton"
             class="slow"
-            onclick="speakWord(0.65)"
+            type="button"
         >
             🐢 Ouvir devagar
         </button>
 
     </div>
 
+
     <div
         id="status"
         class="status"
+        aria-live="polite"
     ></div>
 
+
     <div class="brand">
-        Do Zero às Mil Palavras do Inglês Real
+
+        Do Zero às Mil Palavras
+        do Inglês Real
+
         <br>
+
         @alefalando
+
     </div>
 
 </div>
 
+
 <script>
 
-const params = new URLSearchParams(window.location.search);
+"use strict";
 
-let text = params.get("word") || "";
 
-text = text.trim().slice(0, 120);
+/* ==================================================
+   ELEMENTOS DA PÁGINA
+================================================== */
 
 const wordElement =
-    document.getElementById("word");
+    document.getElementById(
+        "word"
+    );
+
 
 const statusElement =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
-const synth = window.speechSynthesis;
+
+const normalButton =
+    document.getElementById(
+        "normalButton"
+    );
+
+
+const slowButton =
+    document.getElementById(
+        "slowButton"
+    );
+
+
+/* ==================================================
+   PEGAR A PALAVRA DA URL
+================================================== */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+let text =
+    params.get("word") || "";
+
 
 /*
-Mantemos uma referência global.
-Isso também ajuda a evitar alguns
-comportamentos estranhos de navegadores móveis.
+Limpa espaços extras
+e evita textos muito grandes.
 */
-let currentUtterance = null;
+
+text =
+    text
+        .trim()
+        .slice(
+            0,
+            120
+        );
 
 
-/* =========================
-   TEXTO DA PÁGINA
-========================= */
+/* ==================================================
+   MOSTRAR A PALAVRA
+================================================== */
 
-if (!text) {
+if (text) {
+
+    wordElement.textContent =
+        text;
+
+
+    document.title =
+        text
+        +
+        " | Pronúncia";
+
+
+} else {
 
     wordElement.textContent =
         "Nenhuma palavra encontrada";
 
+
     statusElement.textContent =
         "Abra esta página através do botão de áudio do ebook.";
 
-} else {
 
-    wordElement.textContent = text;
-
-    document.title =
-        text + " | Pronúncia";
-
-}
+    normalButton.disabled =
+        true;
 
 
-/* =========================
-   CARREGAR VOZES
-========================= */
-
-let availableVoices = [];
-
-function loadVoices() {
-
-    availableVoices =
-        synth.getVoices();
+    slowButton.disabled =
+        true;
 
 }
+
+
+/* ==================================================
+   VERIFICAR SUPORTE A VOZ
+================================================== */
+
+const speechSupported =
+
+    "speechSynthesis"
+    in window
+
+    &&
+
+    "SpeechSynthesisUtterance"
+    in window;
+
+
+const synth =
+    speechSupported
+        ?
+        window.speechSynthesis
+        :
+        null;
+
 
 /*
-Chamamos imediatamente.
+Mantemos referência global
+da fala atual.
+
+Isso ajuda principalmente
+em navegadores móveis.
 */
 
-loadVoices();
+let currentUtterance =
+    null;
 
 
 /*
-Alguns navegadores carregam
-as vozes posteriormente.
+Lista de vozes disponíveis.
 */
 
-if (
-    typeof synth.onvoiceschanged !==
-    "undefined"
-) {
-
-    synth.addEventListener(
-        "voiceschanged",
-        loadVoices
-    );
-
-}
+let availableVoices =
+    [];
 
 
-/* =========================
-   DETECTAR IPHONE/IPAD
-========================= */
+/* ==================================================
+   DETECTAR IPHONE / IPAD
+================================================== */
 
 function isIOS() {
 
-    return (
-
-        /iPad|iPhone|iPod/.test(
-            navigator.userAgent
-        )
-
+    const userAgent =
+        navigator.userAgent
         ||
+        "";
 
-        (
-            navigator.platform === "MacIntel"
-            &&
-            navigator.maxTouchPoints > 1
-        )
 
+    const oldIOSDevice =
+        /iPad|iPhone|iPod/i
+            .test(
+                userAgent
+            );
+
+
+    /*
+    iPads modernos podem se identificar
+    como Macintosh.
+    */
+
+    const modernIPad =
+
+        navigator.platform
+        ===
+        "MacIntel"
+
+        &&
+
+        navigator.maxTouchPoints
+        >
+        1;
+
+
+    return (
+        oldIOSDevice
+        ||
+        modernIPad
     );
 
 }
 
 
-/* =========================
-   ESCOLHA DA VOZ
-========================= */
+/* ==================================================
+   CARREGAR VOZES
+================================================== */
+
+function loadVoices() {
+
+    if (
+        !speechSupported
+    ) {
+
+        return;
+
+    }
+
+
+    const voices =
+        synth.getVoices();
+
+
+    if (
+        voices.length
+        >
+        0
+    ) {
+
+        availableVoices =
+            voices;
+
+    }
+
+}
+
+
+/*
+Tenta carregar imediatamente.
+*/
+
+if (
+    speechSupported
+) {
+
+    loadVoices();
+
+
+    /*
+    Chrome, Safari e outros
+    podem carregar as vozes
+    alguns instantes depois.
+    */
+
+    if (
+        typeof
+        synth.addEventListener
+        ===
+        "function"
+    ) {
+
+        synth.addEventListener(
+            "voiceschanged",
+            loadVoices
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   ESCOLHER VOZ EM INGLÊS
+================================================== */
 
 function getEnglishVoice() {
 
-    /*
-    No iPhone deixamos o próprio
-    iOS escolher a voz.
-
-    Isso é mais confiável do que
-    forçar Samantha/Fred/etc.
-    */
-
-    if (isIOS()) {
+    if (
+        !speechSupported
+    ) {
 
         return null;
 
@@ -315,71 +568,182 @@ function getEnglishVoice() {
 
 
     /*
-    Em desktop tentamos selecionar
-    uma voz americana.
+    No iPhone/iPad,
+    não forçamos uma voz específica.
+
+    O idioma en-US será definido
+    na frase e o próprio iOS
+    escolherá uma voz compatível.
     */
 
-    const preferred =
-        availableVoices.find(
-            voice =>
+    if (
+        isIOS()
+    ) {
 
-                /^en-US/i.test(voice.lang)
-
-                &&
-
-                /Samantha|Google US English|Aria|Jenny/i
-                    .test(voice.name)
-        );
-
-
-    if (preferred) {
-
-        return preferred;
+        return null;
 
     }
 
 
-    const american =
-        availableVoices.find(
-            voice =>
-                /^en-US/i.test(voice.lang)
-        );
+    /*
+    Atualiza a lista antes
+    de selecionar.
+    */
+
+    const currentVoices =
+        synth.getVoices();
 
 
-    if (american) {
+    if (
+        currentVoices.length
+        >
+        0
+    ) {
 
-        return american;
+        availableVoices =
+            currentVoices;
 
     }
 
 
-    return availableVoices.find(
-        voice =>
-            /^en/i.test(voice.lang)
+    /*
+    Preferimos algumas
+    vozes americanas comuns.
+    */
+
+    const preferredVoice =
+        availableVoices.find(
+
+            function (
+                voice
+            ) {
+
+                return (
+
+                    /^en-US/i
+                        .test(
+                            voice.lang
+                        )
+
+                    &&
+
+                    /Samantha|Google US English|Aria|Jenny|Zira|Ava|Allison/i
+                        .test(
+                            voice.name
+                        )
+
+                );
+
+            }
+
+        );
+
+
+    if (
+        preferredVoice
+    ) {
+
+        return preferredVoice;
+
+    }
+
+
+    /*
+    Se não encontrar uma preferida,
+    usa qualquer voz americana.
+    */
+
+    const americanVoice =
+        availableVoices.find(
+
+            function (
+                voice
+            ) {
+
+                return (
+                    /^en-US/i
+                        .test(
+                            voice.lang
+                        )
+                );
+
+            }
+
+        );
+
+
+    if (
+        americanVoice
+    ) {
+
+        return americanVoice;
+
+    }
+
+
+    /*
+    Último fallback:
+    qualquer voz em inglês.
+    */
+
+    const englishVoice =
+        availableVoices.find(
+
+            function (
+                voice
+            ) {
+
+                return (
+                    /^en/i
+                        .test(
+                            voice.lang
+                        )
+                );
+
+            }
+
+        );
+
+
+    return (
+        englishVoice
+        ||
+        null
     );
 
 }
 
 
-/* =========================
-   FALAR
-========================= */
+/* ==================================================
+   ATUALIZAR STATUS
+================================================== */
 
-function speakWord(rate = 0.9) {
+function setStatus(
+    message
+) {
 
-    if (!text) {
+    statusElement.textContent =
+        message;
 
-        return;
+}
 
-    }
 
+/* ==================================================
+   FUNÇÃO PRINCIPAL DE PRONÚNCIA
+================================================== */
+
+function speakWord(
+    rate
+) {
+
+    /*
+    Sem palavra,
+    não fazemos nada.
+    */
 
     if (
-        !("speechSynthesis" in window)
+        !text
     ) {
-
-        statusElement.textContent =
-            "Seu navegador não oferece suporte à pronúncia.";
 
         return;
 
@@ -387,114 +751,354 @@ function speakWord(rate = 0.9) {
 
 
     /*
-    Safari às vezes deixa o sintetizador
+    Verifica suporte do navegador.
+    */
+
+    if (
+        !speechSupported
+    ) {
+
+        setStatus(
+            "Seu navegador não oferece suporte à pronúncia."
+        );
+
+
+        return;
+
+    }
+
+
+    /*
+    Algumas versões do Safari
+    podem deixar o sintetizador
     em estado pausado.
     */
 
-    if (synth.paused) {
+    if (
+        synth.paused
+    ) {
 
-        synth.resume();
+        try {
+
+            synth.resume();
+
+        } catch (
+            error
+        ) {
+
+            console.warn(
+                "Não foi possível retomar o sintetizador:",
+                error
+            );
+
+        }
 
     }
 
 
     /*
-    IMPORTANTE:
-    não usamos cancel() no iPhone.
+    IMPORTANTE PARA IOS:
 
-    Alguns Safari/iOS podem descartar
-    a fala logo depois de cancel().
+    Não usamos cancel()
+    antes da reprodução no iPhone/iPad.
+
+    Em alguns ambientes Safari/iOS,
+    cancelar e imediatamente falar
+    pode impedir que a nova fala seja
+    reproduzida.
     */
 
     if (
         !isIOS()
         &&
-        synth.speaking
+        (
+            synth.speaking
+            ||
+            synth.pending
+        )
     ) {
 
-        synth.cancel();
+        try {
+
+            synth.cancel();
+
+        } catch (
+            error
+        ) {
+
+            console.warn(
+                "Erro ao cancelar fala anterior:",
+                error
+            );
+
+        }
 
     }
 
 
+    /*
+    Criamos uma nova fala.
+    */
+
+    const utterance =
+        new SpeechSynthesisUtterance(
+            text
+        );
+
+
+    /*
+    Mantemos uma referência global.
+    */
+
     currentUtterance =
-        new SpeechSynthesisUtterance(text);
+        utterance;
 
 
-    currentUtterance.lang =
+    /*
+    Idioma.
+    */
+
+    utterance.lang =
         "en-US";
 
-    currentUtterance.rate =
+
+    /*
+    Velocidade.
+    */
+
+    utterance.rate =
         rate;
 
-    currentUtterance.pitch =
+
+    /*
+    Tom natural.
+    */
+
+    utterance.pitch =
         1;
 
-    currentUtterance.volume =
+
+    /*
+    Volume máximo.
+    */
+
+    utterance.volume =
         1;
 
+
+    /*
+    No desktop,
+    tentamos selecionar
+    uma boa voz americana.
+    */
 
     const voice =
         getEnglishVoice();
 
 
-    /*
-    No iOS normalmente fica sem
-    voice explicitamente definida,
-    permitindo ao sistema selecionar
-    a voz apropriada para en-US.
-    */
+    if (
+        voice
+    ) {
 
-    if (voice) {
-
-        currentUtterance.voice =
+        utterance.voice =
             voice;
 
     }
 
 
-    currentUtterance.onstart =
+    /* ==================================================
+       EVENTOS
+    ================================================== */
+
+    utterance.onstart =
         function () {
 
-            statusElement.textContent =
-                "Reproduzindo...";
+            setStatus(
+                "Reproduzindo..."
+            );
 
         };
 
 
-    currentUtterance.onend =
+    utterance.onend =
         function () {
 
-            statusElement.textContent =
-                "";
+            setStatus(
+                ""
+            );
+
+
+            if (
+                currentUtterance
+                ===
+                utterance
+            ) {
+
+                currentUtterance =
+                    null;
+
+            }
 
         };
 
 
-    currentUtterance.onerror =
-        function (event) {
+    utterance.onerror =
+        function (
+            event
+        ) {
 
-            console.log(
-                "Speech error:",
+            console.error(
+                "Erro SpeechSynthesis:",
                 event.error
             );
 
-            statusElement.textContent =
-                "Erro de áudio: "
-                + event.error;
+
+            /*
+            "canceled" pode acontecer
+            normalmente quando uma fala
+            anterior é interrompida.
+            */
+
+            if (
+                event.error
+                ===
+                "canceled"
+            ) {
+
+                setStatus(
+                    ""
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+            Alguns navegadores usam
+            "interrupted" em situações
+            semelhantes.
+            */
+
+            if (
+                event.error
+                ===
+                "interrupted"
+            ) {
+
+                setStatus(
+                    ""
+                );
+
+
+                return;
+
+            }
+
+
+            setStatus(
+                "Não foi possível reproduzir o áudio."
+            );
 
         };
 
 
-    /*
-    Esta chamada acontece diretamente
-    depois do clique do usuário.
-    Isso é importante principalmente
-    no Safari/iPhone.
-    */
+    /* ==================================================
+       REPRODUZIR
+    ================================================== */
 
-    synth.speak(
-        currentUtterance
+    try {
+
+        /*
+        A chamada speak() acontece
+        diretamente dentro da função
+        acionada pelo toque do usuário.
+
+        Isso é especialmente importante
+        no Safari/iPhone.
+        */
+
+        synth.speak(
+            utterance
+        );
+
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "Erro ao iniciar reprodução:",
+            error
+        );
+
+
+        setStatus(
+            "Não foi possível iniciar a pronúncia."
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   BOTÃO NORMAL
+================================================== */
+
+normalButton.addEventListener(
+
+    "click",
+
+    function () {
+
+        speakWord(
+            0.9
+        );
+
+    }
+
+);
+
+
+/* ==================================================
+   BOTÃO DEVAGAR
+================================================== */
+
+slowButton.addEventListener(
+
+    "click",
+
+    function () {
+
+        speakWord(
+            0.65
+        );
+
+    }
+
+);
+
+
+/* ==================================================
+   AVISO CASO O NAVEGADOR NÃO TENHA SUPORTE
+================================================== */
+
+if (
+    !speechSupported
+) {
+
+    normalButton.disabled =
+        true;
+
+
+    slowButton.disabled =
+        true;
+
+
+    setStatus(
+        "Este navegador não oferece suporte à pronúncia por voz."
     );
 
 }
